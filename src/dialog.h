@@ -172,9 +172,6 @@ inline void DrawDialog(const DialogSystem& dialog) {
     
     std::string displayText = current.text.substr(0, dialog.currentChar);
     
-    float maxTextWidth = settings.boxWidth - (contentX - boxX) - settings.textPadding;
-    Vector2 textSize = MeasureTextEx(dialog.comicSansFont, displayText.c_str(), settings.fontSize, 1.0f);
-    
     DrawTextEx(dialog.comicSansFont, displayText.c_str(), 
               {contentX, contentY + 10}, settings.fontSize, 1.0f, settings.textColor);
     
