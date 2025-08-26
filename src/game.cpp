@@ -5,6 +5,7 @@
 #include "walk.h"
 #include "person.h"
 #include "game.h"
+#include "dialog.h"
 #include <cmath>
 
 void RunGame() {
@@ -56,51 +57,75 @@ void RunGame() {
     // skybox
     Sky sky = LoadSky("assets/skybox.png");
 
+    // dialog system setup
+    DialogSystem dialog = InitDialog();
+    bool canInteract = false;
+
+    // add dialog entries
+    AddDialogEntry(dialog, "hi my name is swag guy", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
+    AddDialogEntry(dialog, "i work at mcdonalds n stuff", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
+    AddDialogEntry(dialog, "great food too btw...", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
+    AddDialogEntry(dialog, "oh yea, use ur mouse to look\naround and use WASD to move", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
+    AddDialogEntry(dialog, "oh and shift to yk run LMFAO", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
+    
     // main loop
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
 
-        // mouse look
-        Vector2 mouseDelta = GetMouseDelta();
-        yaw += -mouseDelta.x * mouseSensitivity;
-        pitch += -mouseDelta.y * mouseSensitivity;
-        if (pitch >  1.45f) pitch =  1.45f;
-        if (pitch < -1.45f) pitch = -1.45f;
+        if (!dialog.isActive) {
+            // mouse look (only when dialog is not active)
+            Vector2 mouseDelta = GetMouseDelta();
+            yaw += -mouseDelta.x * mouseSensitivity;
+            pitch += -mouseDelta.y * mouseSensitivity;
+            if (pitch >  1.45f) pitch =  1.45f;
+            if (pitch < -1.45f) pitch = -1.45f;
 
-        // movement dirs
-        Vector3 forward = { sinf(yaw), 0.0f, cosf(yaw) };
-        Vector3 right   = { -forward.z, 0.0f, forward.x };
+            // movement dirs
+            Vector3 forward = { sinf(yaw), 0.0f, cosf(yaw) };
+            Vector3 right   = { -forward.z, 0.0f, forward.x };
 
-        bool moving = false;
-        bool sprint = IsKeyDown(KEY_LEFT_SHIFT);
-        float speed = moveSpeed * (sprint ? 1.8f : 1.0f);
+            bool moving = false;
+            bool sprint = IsKeyDown(KEY_LEFT_SHIFT);
+            float speed = moveSpeed * (sprint ? 1.8f : 1.0f);
 
-        Vector3 moveDelta = { 0, 0, 0 };
-        if (IsKeyDown(KEY_W)) { moveDelta = Vector3Add(moveDelta, forward); moving = true; }
-        if (IsKeyDown(KEY_S)) { moveDelta = Vector3Subtract(moveDelta, forward); moving = true; }
-        if (IsKeyDown(KEY_A)) { moveDelta = Vector3Subtract(moveDelta, right); moving = true; }
-        if (IsKeyDown(KEY_D)) { moveDelta = Vector3Add(moveDelta, right); moving = true; }
+            Vector3 moveDelta = { 0, 0, 0 };
+            if (IsKeyDown(KEY_W)) { moveDelta = Vector3Add(moveDelta, forward); moving = true; }
+            if (IsKeyDown(KEY_S)) { moveDelta = Vector3Subtract(moveDelta, forward); moving = true; }
+            if (IsKeyDown(KEY_A)) { moveDelta = Vector3Subtract(moveDelta, right); moving = true; }
+            if (IsKeyDown(KEY_D)) { moveDelta = Vector3Add(moveDelta, right); moving = true; }
 
-        // normalize movement
-        if (moving) {
-            float len = sqrtf(moveDelta.x*moveDelta.x + moveDelta.y*moveDelta.y + moveDelta.z*moveDelta.z);
-            if (len != 0.0f) {
-                moveDelta.x /= len; moveDelta.y /= len; moveDelta.z /= len;
+            // normalize movement
+            if (moving) {
+                float len = sqrtf(moveDelta.x*moveDelta.x + moveDelta.y*moveDelta.y + moveDelta.z*moveDelta.z);
+                if (len != 0.0f) {
+                    moveDelta.x /= len; moveDelta.y /= len; moveDelta.z /= len;
+                }
+                Vector3 newPlayerPos = Vector3Add(playerPos, Vector3Scale(moveDelta, speed * dt));
+                
+                // check before moving again
+                if (!CheckPersonCollision(newPlayerPos, swagGuy)) {
+                    playerPos = newPlayerPos;
+                }
             }
-            Vector3 newPlayerPos = Vector3Add(playerPos, Vector3Scale(moveDelta, speed * dt));
+
+            // look direction
+            Vector3 lookDir = { cosf(pitch) * sinf(yaw), sinf(pitch), cosf(pitch) * cosf(yaw) };
+
+            // camera & footsteps (only when dialog is not active)
+            UpdateFirstPersonCameraWithBobbing(camera, playerPos, lookDir, forward, moving, sprint, dt, bobSettings);
+            UpdateWalk(walk, moving, sprint, dt);
+
+            // check interaction with person
+            canInteract = CanInteractWithPerson(playerPos, lookDir, swagGuy);
             
-            // check before moving again
-            if (!CheckPersonCollision(newPlayerPos, swagGuy)) {
-                playerPos = newPlayerPos;
+            // start dialog when pressing E
+            if (canInteract && IsKeyPressed(KEY_E)) {
+                StartDialog(dialog);
             }
         }
 
-        // look direction
-        Vector3 lookDir = { cosf(pitch) * sinf(yaw), sinf(pitch), cosf(pitch) * cosf(yaw) };
-
-        // camera & footsteps
-        UpdateFirstPersonCameraWithBobbing(camera, playerPos, lookDir, forward, moving, sprint, dt, bobSettings);
-        UpdateWalk(walk, moving, sprint, dt);
+        // update dialog system
+        UpdateDialog(dialog, dt);
 
         // render
         BeginDrawing();
@@ -110,10 +135,20 @@ void RunGame() {
                 DrawModel(floorModel, (Vector3){0.0f, 0.0f, 0.0f}, 1.0f, WHITE);
                 DrawPerson(swagGuy, camera);
             EndMode3D();
+            
+            // draw interaction indicator
+            if (canInteract && !dialog.isActive) {
+                DrawInteractionIndicator();
+            }
+
+            // draw dialog
+            DrawDialog(dialog);
+            
         EndDrawing();
     }
 
     // cleanup
+    UnloadDialog(dialog);
     UnloadWalk(walk);
     UnloadModel(floorModel);
     UnloadTexture(groundTex);
