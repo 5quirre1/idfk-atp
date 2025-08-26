@@ -1,4 +1,3 @@
-// i'm trying out commentibg on my code to try to make it understandabnle ig?? so uh sorry if no understanmd
 #include "raylib.h"
 #include "camera_bob.h"
 #include "sky.h"
@@ -17,7 +16,7 @@ void RunGame() {
         .fovy = 60.0f,
         .projection = CAMERA_PERSPECTIVE
     };
-    
+
     // more camera sutff:brokne
     camera.position = (Vector3){ 0.0f, 1.6f, 4.0f };
     camera.target   = (Vector3){ 0.0f, 1.6f, 0.0f };
@@ -67,7 +66,11 @@ void RunGame() {
     AddDialogEntry(dialog, "great food too btw...", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
     AddDialogEntry(dialog, "oh yea, use ur mouse to look\naround and use WASD to move", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
     AddDialogEntry(dialog, "oh and shift to yk run LMFAO", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
-    
+
+    // define world borders
+    const float worldBorderX = 20.0f;
+    const float worldBorderZ = 20.0f;
+
     // main loop
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
@@ -101,11 +104,17 @@ void RunGame() {
                     moveDelta.x /= len; moveDelta.y /= len; moveDelta.z /= len;
                 }
                 Vector3 newPlayerPos = Vector3Add(playerPos, Vector3Scale(moveDelta, speed * dt));
-                
+
                 // check before moving again
                 if (!CheckPersonCollision(newPlayerPos, swagGuy)) {
                     playerPos = newPlayerPos;
                 }
+
+                // Apply world borders after updating playerPos
+                if (playerPos.x > worldBorderX) playerPos.x = worldBorderX;
+                if (playerPos.x < -worldBorderX) playerPos.x = -worldBorderX;
+                if (playerPos.z > worldBorderZ) playerPos.z = worldBorderZ;
+                if (playerPos.z < -worldBorderZ) playerPos.z = -worldBorderZ;
             }
 
             // look direction
@@ -117,7 +126,7 @@ void RunGame() {
 
             // check interaction with person
             canInteract = CanInteractWithPerson(playerPos, lookDir, swagGuy);
-            
+
             // start dialog when pressing E
             if (canInteract && IsKeyPressed(KEY_E)) {
                 StartDialog(dialog);
@@ -135,7 +144,7 @@ void RunGame() {
                 DrawModel(floorModel, (Vector3){0.0f, 0.0f, 0.0f}, 1.0f, WHITE);
                 DrawPerson(swagGuy, camera);
             EndMode3D();
-            
+
             // draw interaction indicator
             if (canInteract && !dialog.isActive) {
                 DrawInteractionIndicator();
@@ -143,7 +152,7 @@ void RunGame() {
 
             // draw dialog
             DrawDialog(dialog);
-            
+
         EndDrawing();
     }
 
