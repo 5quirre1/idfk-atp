@@ -1,4 +1,4 @@
-// i'm trying out commentibg on my code to try to make it understandabnle ig?? so uh sorry if no understand
+// i'm trying out commentibg on my code to try to make it understandabnle ig?? so uh sorry if no understanmd
 #include "raylib.h"
 #include "camera_bob.h"
 #include "sky.h"
@@ -87,7 +87,12 @@ void RunGame() {
             if (len != 0.0f) {
                 moveDelta.x /= len; moveDelta.y /= len; moveDelta.z /= len;
             }
-            playerPos = Vector3Add(playerPos, Vector3Scale(moveDelta, speed * dt));
+            Vector3 newPlayerPos = Vector3Add(playerPos, Vector3Scale(moveDelta, speed * dt));
+            
+            // check before moving again
+            if (!CheckPersonCollision(newPlayerPos, swagGuy)) {
+                playerPos = newPlayerPos;
+            }
         }
 
         // look direction
