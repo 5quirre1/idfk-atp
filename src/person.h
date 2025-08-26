@@ -26,3 +26,13 @@ inline void UnloadPerson(Person& p) {
 inline void DrawPerson(const Person& p, const Camera3D& camera) {
     DrawBillboard(camera, p.texture, p.position, p.scale, WHITE); // raylib is so swag that they already have smth like ts :mending-heart:
 }
+
+// checks the collision to maek sure no going though the person
+inline bool CheckPersonCollision(Vector3 playerPos, const Person& person, float playerRadius = 0.1f) {
+    float dx = playerPos.x - person.position.x;
+    float dz = playerPos.z - person.position.z;
+    float distance = sqrtf(dx*dx + dz*dz);
+    float personRadius = person.scale * 0.1f;
+    
+    return distance < (playerRadius + personRadius);
+}
