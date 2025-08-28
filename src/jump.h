@@ -26,7 +26,7 @@ inline void InitJump(JumpState& jump) {
     jump.groundLevel = 0.0f;
     jump.timeSinceGrounded = 0.0f;
     jump.timeSinceJumpPressed = 999.0f;
-    jump.jumpSound = LoadSound("assets/jump.mp3");
+    jump.jumpSound = LoadSound("assets/core/jump.mp3");
     jump.soundLoaded = true;
 }
 
