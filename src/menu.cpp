@@ -6,7 +6,7 @@ Menu InitMenu(void) {
     Menu menu = {0};
     
     // load all da stuff
-    menu.background = LoadTexture("assets/menu-bg.png");
+    menu.background = LoadTexture("assets/core/menu/menu-bg.png");
     menu.titleFont = LoadFontEx("assets/core/comic.ttf", 72, 0, 250);
     if (menu.titleFont.texture.id == 0) {
         menu.titleFont = GetFontDefault();
