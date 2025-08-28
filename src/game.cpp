@@ -1,3 +1,4 @@
+// i'm trying out commentibg on my code to try to make it understandabnle ig?? so uh sorry if no understand
 #include "raylib.h"
 #include "camera_bob.h"
 #include "sky.h"
