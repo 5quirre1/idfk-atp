@@ -5,6 +5,7 @@
 #include "person.h"
 #include "game.h"
 #include "dialog.h"
+#include "jump.h"
 #include <cmath>
 
 void RunGame() {
@@ -17,7 +18,7 @@ void RunGame() {
         .projection = CAMERA_PERSPECTIVE
     };
 
-    // more camera sutff:brokne
+    // more camera sutff:brokneheart
     camera.position = (Vector3){ 0.0f, 1.6f, 4.0f };
     camera.target   = (Vector3){ 0.0f, 1.6f, 0.0f };
     camera.up       = (Vector3){ 0.0f, 1.0f, 0.0f };
@@ -50,6 +51,11 @@ void RunGame() {
     WalkState walk;
     InitWalk(walk);
 
+    // jump system
+    JumpState jump;
+    InitJump(jump);
+    jump.groundLevel = 0.0f;  // set ground level
+
     // person
     Person swagGuy = LoadPerson("assets/swag-guy.png", {2.0f, 1.0f, 0.0f}, 2.0f);
 
@@ -66,6 +72,7 @@ void RunGame() {
     AddDialogEntry(dialog, "great food too btw...", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
     AddDialogEntry(dialog, "oh yea, use ur mouse to look\naround and use WASD to move", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
     AddDialogEntry(dialog, "oh and shift to yk run LMFAO", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
+    AddDialogEntry(dialog, "oh and SPACE to jump btw!", "assets/swag-guy-face.png", "assets/dialog-swag.wav");
 
     // define world borders
     const float worldBorderX = 20.0f;
@@ -107,22 +114,26 @@ void RunGame() {
 
                 // check before moving again
                 if (!CheckPersonCollision(newPlayerPos, swagGuy)) {
-                    playerPos = newPlayerPos;
+                    playerPos.x = newPlayerPos.x;
+                    playerPos.z = newPlayerPos.z;
                 }
 
-                // Apply world borders after updating playerPos
+                // apply world borders after updating playerPos
                 if (playerPos.x > worldBorderX) playerPos.x = worldBorderX;
                 if (playerPos.x < -worldBorderX) playerPos.x = -worldBorderX;
                 if (playerPos.z > worldBorderZ) playerPos.z = worldBorderZ;
                 if (playerPos.z < -worldBorderZ) playerPos.z = -worldBorderZ;
             }
 
+            // update jump physics
+            UpdateJump(jump, playerPos, dt);
+
             // look direction
             Vector3 lookDir = { cosf(pitch) * sinf(yaw), sinf(pitch), cosf(pitch) * cosf(yaw) };
 
             // camera & footsteps (only when dialog is not active)
-            UpdateFirstPersonCameraWithBobbing(camera, playerPos, lookDir, forward, moving, sprint, dt, bobSettings);
-            UpdateWalk(walk, moving, sprint, dt);
+            UpdateFirstPersonCameraWithBobbing(camera, playerPos, lookDir, forward, moving && jump.isGrounded, sprint, dt, jump, bobSettings);
+            UpdateWalk(walk, moving && jump.isGrounded, sprint, dt);
 
             // check interaction with person
             canInteract = CanInteractWithPerson(playerPos, lookDir, swagGuy);
@@ -131,7 +142,16 @@ void RunGame() {
             if (canInteract && IsKeyPressed(KEY_E)) {
                 StartDialog(dialog);
             }
+        } else {
+            // no jump
+            jump.verticalVelocity = 0.0f;
+            if (playerPos.y < jump.groundLevel) {
+                playerPos.y = jump.groundLevel;
+                jump.isGrounded = true;
+                jump.isJumping = false;
+            }
         }
+
 
         // update dialog system
         UpdateDialog(dialog, dt);
@@ -157,6 +177,7 @@ void RunGame() {
     }
 
     // cleanup
+    UnloadJump(jump);
     UnloadDialog(dialog);
     UnloadWalk(walk);
     UnloadModel(floorModel);
