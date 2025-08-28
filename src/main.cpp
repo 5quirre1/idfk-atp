@@ -12,7 +12,7 @@ int main() {
     SetExitKey(0); // don't make esc close window
 
     // icon
-    Image icon = LoadImage("assets/dog.png");
+    Image icon = LoadImage("assets/core/dog.png");
     ImageFormat(&icon, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     SetWindowIcon(icon);
     UnloadImage(icon);
