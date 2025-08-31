@@ -12,8 +12,8 @@ struct WalkState {
 
 // init walk sound
 void InitWalk(WalkState &walk) {
-    walk.step1 = LoadSound("assets/step1.wav");
-    walk.step2 = LoadSound("assets/step2.wav");
+    walk.step1 = LoadSound("assets/core/step1.wav");
+    walk.step2 = LoadSound("assets/core/step2.wav");
     walk.nextStepFirst = true;
     walk.stepInterval = 0.45f;
     walk.stepTimer = 0.0f;
