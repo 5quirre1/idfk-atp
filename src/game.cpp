@@ -72,8 +72,7 @@ void RunGame() {
     AddDialogEntry(dialog, "i work at mcdonalds n stuff", "assets/core/swag-guy-face.png", "assets/core/dialog-swag.wav");
     AddDialogEntry(dialog, "great food too btw...", "assets/core/swag-guy-face.png", "assets/core/dialog-swag.wav");
     AddDialogEntry(dialog, "oh yea, use ur mouse to look\naround and use WASD to move", "assets/core/swag-guy-face.png", "assets/core/dialog-swag.wav");
-    AddDialogEntry(dialog, "oh and shift to yk run LMFAO", "assets/core/swag-guy-face.png", "assets/core/dialog-swag.wav");
-    AddDialogEntry(dialog, "oh and SPACE to jump btw!", "assets/core/swag-guy-face.png", "assets/core/dialog-swag.wav");
+    AddDialogEntry(dialog, "oh and shift to yk run LMFAO + space to jump", "assets/core/swag-guy-face.png", "assets/core/dialog-swag.wav");
 
     // define world borders
     const float worldBorderX = 20.0f;
@@ -166,6 +165,7 @@ void RunGame() {
                 DrawPerson(swagGuy, camera);
             EndMode3D();
 
+
             // draw interaction indicator
             if (canInteract && !dialog.isActive) {
                 DrawInteractionIndicator();
@@ -173,7 +173,6 @@ void RunGame() {
 
             // draw dialog
             DrawDialog(dialog);
-
         EndDrawing();
     }
 
